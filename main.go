@@ -62,7 +62,7 @@ func GetObjectCorrelations(db *sql.DB, fk string, tableName string) ([]core_sdk.
 	return newIDs,nil
 }
 
-func AddCorrelations(pk int64, newIDs []core_sdk.ExtID, db sql.DB, tableName string) error {
+func AddCorrelations(pk int64, newIDs []core_sdk.ExtID, db *sql.DB, tableName string) error {
 	var insertStatements []string
 	for _, extID := range newIDs {
 		stringVal := fmt.Sprintf("('%s','%s',%s)",extID.IntegrationCode,extID.IntegrationID,strconv.FormatInt(pk,10))
