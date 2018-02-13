@@ -4,6 +4,8 @@ import (
 	"bitbucket.org/tokom_/core_sdk"
 	"fmt"
 	"database/sql"
+	"strconv"
+	"strings"
 )
 
 func CreateCodesFromSources(codes []core_sdk.IntegrationCode, switchboard []core_sdk.IntegrationCode, inverted bool) core_sdk.IntCodes {
@@ -58,4 +60,22 @@ func GetObjectCorrelations(db *sql.DB, fk string, tableName string) ([]core_sdk.
 		newIDs = append(newIDs, currID)
 	}
 	return newIDs,nil
+}
+
+func AddCorrelations(pk int64, newIDs []core_sdk.ExtID, db sql.DB, tableName string) error {
+	var insertStatements []string
+	for _, extID := range newIDs {
+		stringVal := fmt.Sprintf("('%s','%s',%s)",extID.IntegrationCode,extID.IntegrationID,strconv.FormatInt(pk,10))
+		insertStatements = append(insertStatements,stringVal)
+	}
+
+	if len(insertStatements) > 0 {
+		corrDBQuery := fmt.Sprintf("insert into COR_%s (extCode,extID,FK_OBJ) values %s", tableName, strings.Join(insertStatements, ","))
+		_, dbExecErr := db.Exec(corrDBQuery)
+		if dbExecErr != nil {
+			return dbExecErr
+		}
+	}
+
+	return nil
 }
