@@ -306,7 +306,7 @@ func InstallChangeCore (request linkcore.InstallRequest, db *sql.DB, origin stri
 	resp := request.ConstructNewResponseObject().(linkcore.InstallResponse)
 
 	//note that the codes and such are created according to what was sent
-	createRequest, createErr := request.ConstructCreateRequest()
+	createRequest, createErr := request.ConstructCreateRequest(db)
 	if createErr != nil {
 		log.AddNewFailureFromError(500,core_sdk.ProductDomain,createErr,true,request.GetInstallRectifier(origin))
 		resp.SetLog(*log)
