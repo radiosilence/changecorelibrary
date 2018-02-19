@@ -44,27 +44,6 @@ func CreateIDsFromSources(ids []core_sdk.ExtID, switchboard []core_sdk.Integrati
 	}
 }
 
-func GetObjectCorrelations(db *sql.DB, fk string, tableName string) ([]core_sdk.ExtID, error){
-	queryString := fmt.Sprintf("Select extCode, extID from COR_%s where FK_OBJ = ?",tableName)
-	dbRes, dbErr := db.Query(queryString,fk)
-	if dbErr != nil {
-		return nil, dbErr
-	}
-
-	var newIDs []core_sdk.ExtID
-	for dbRes.Next() {
-		var currID core_sdk.ExtID
-		intCode := new(string)
-		scanErr := dbRes.Scan(&intCode, &currID.IntegrationID)
-		currID.IntegrationCode = core_sdk.IntegrationCode(*intCode)
-		if scanErr != nil {
-			continue
-		}
-		newIDs = append(newIDs, currID)
-	}
-	return newIDs,nil
-}
-
 func AddCorrelations(pk int64, newIDs []core_sdk.ExtID, db *sql.DB, tableName string) error {
 	var insertStatements []string
 	for _, extID := range newIDs {
@@ -198,7 +177,7 @@ func ModifyChangeCore(request linkcore.ModifyRequest, db *sql.DB, origin string)
 
 	//if no ID's are given, obtain them to then push the modified changes
 	if request.GetIDs() == nil {
-		newIDs, idErr := GetObjectCorrelations(db,strconv.FormatInt(request.GetPrimaryKey(),10),request.GetObjectHandle())
+		newIDs, idErr := core_sdk.GetObjectCorrelations(db,strconv.FormatInt(request.GetPrimaryKey(),10),request.GetObjectHandle())
 		if idErr != nil {
 			//if we fail to get the ID's, we treat it as a non fatal failure since we have the full object but we must return
 			//immediately as the rest of hte function relies on those ID's
