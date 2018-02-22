@@ -85,15 +85,15 @@ func HandleChangeCoreInjection(c *gin.Context, req linkcore.Request, db *sql.DB,
 
 func StandardCoreSwitch(ogReq linkcore.Request, db *sql.DB, origin string) (Catch.IsLogged){
 	switch v := ogReq.(type) {
-	case *linkcore.CreateRequest:
+	case linkcore.CreateRequest:
 		return CreateChangeCore(v,db,origin)
-	case *linkcore.ModifyRequest:
+	case linkcore.ModifyRequest:
 		return ModifyChangeCore(v,db,origin)
-	case *linkcore.DeleteRequest:
+	case linkcore.DeleteRequest:
 		return DeleteChangeCore(v,db,origin)
-	case *linkcore.InstallRequest:
+	case linkcore.InstallRequest:
 		return InstallChangeCore(v,db,origin)
-	case *linkcore.LinkRequest:
+	case linkcore.LinkRequest:
 		return LinkChangeCore(v,db,origin)
 	default:
 		log := new(Catch.Log)
