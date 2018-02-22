@@ -6,6 +6,10 @@ import (
 	"database/sql"
 	"strconv"
 	"strings"
+	"bitbucket.org/tokom_/linkcore"
+	"github.com/Afternight/Catch"
+	"bitbucket.org/tokom_/changecorelibrary"
+	"errors"
 )
 
 func CreateCodesFromSources(codes []core_sdk.IntegrationCode, switchboard []core_sdk.IntegrationCode, inverted bool) core_sdk.IntCodes {
@@ -57,4 +61,24 @@ func AddCorrelations(pk int64, newIDs []core_sdk.ExtID, db *sql.DB, tableName st
 	}
 
 	return nil
+}
+
+func StandardCoreSwitch(ogReq linkcore.Request, db *sql.DB, origin string) (Catch.IsLogged){
+	switch v := ogReq.(type) {
+	case *linkcore.CreateRequest:
+		return ChangeCoreLibrary.CreateChangeCore(v,db,origin)
+	case *linkcore.ModifyRequest:
+		return ChangeCoreLibrary.ModifyChangeCore(v,db,origin)
+	case *linkcore.DeleteRequest:
+		return ChangeCoreLibrary.DeleteChangeCore(v,db,origin)
+	case *linkcore.InstallRequest:
+		return ChangeCoreLibrary.InstallChangeCore(v,db,origin)
+	case *linkcore.LinkRequest:
+		return ChangeCoreLibrary.LinkChangeCore(v,db,origin)
+	default:
+		log := new(Catch.Log)
+		log.AddNewFailureFromError(500,core_sdk.ProductDomain,errors.New("Request Not Implemented"),true,Catch.Rectifier{}) //todo fix this pass
+		return log
+	}
+	//todo push the change here to switchboard
 }
