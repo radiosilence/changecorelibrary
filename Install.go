@@ -4,7 +4,6 @@ import (
 	"bitbucket.org/tokom_/linkcore"
 	"database/sql"
 	"github.com/Afternight/Catch"
-	"bitbucket.org/tokom_/core_sdk"
 )
 
 func InstallChangeCore (request linkcore.InstallRequest, db *sql.DB, origin string) (linkcore.InstallResponse) {
@@ -14,19 +13,19 @@ func InstallChangeCore (request linkcore.InstallRequest, db *sql.DB, origin stri
 	//note that the codes and such are created according to what was sent
 	createRequest, createErr := request.ConstructCreateRequest(db)
 	if createErr != nil {
-		log.AddNewFailureFromError(500,core_sdk.ProductDomain,createErr,true,request.GetInstallRectifier(origin))
+		log.AddNewFailureFromError(500,origin,createErr,true,request.GetInstallRectifier(origin))
 		resp.SetLog(*log)
 		return resp
 	}
 
 	//consider adding switchboard check here to allow null passing of codes, currently install requires
 
-	//create product in our integrations
+	//create object in our integrations
 	dO, _, deltaErr := createRequest.EnactDelta()
 
 	//check if there was an error in sending the delta request
 	if deltaErr != nil || dO == nil {
-		log.AddNewFailureFromError(500,core_sdk.ProductDomain,deltaErr,true,request.GetInstallRectifier(origin))
+		log.AddNewFailureFromError(500,origin,deltaErr,true,request.GetInstallRectifier(origin))
 		resp.SetLog(*log)
 		return resp
 	}
@@ -47,7 +46,7 @@ func InstallChangeCore (request linkcore.InstallRequest, db *sql.DB, origin stri
 	//link in itself is idempotent, so sending a rectifier over the top is only a performance problem
 	//todo add function that checks on resps set object if it has gotten all ID's that were hit with delta, if not run in the link rectifier
 	if corrErr != nil {
-		log.AddNewFailureFromError(500, core_sdk.ProductDomain,corrErr,false,request.GetLinkRectifier(origin,deltaComReq.GetIDs()))
+		log.AddNewFailureFromError(500, origin,corrErr,false,request.GetLinkRectifier(origin,deltaComReq.GetIDs()))
 	}
 
 	resp.SetObjectFromPK(db,request.GetPrimaryKey())

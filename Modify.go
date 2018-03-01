@@ -24,18 +24,18 @@ func ModifyChangeCore(request linkcore.ModifyRequest, db *sql.DB, origin string)
 	totalUpdateStatement := request.GetStatementArray()
 
 	if len(totalUpdateStatement) == 0 {
-		log.AddNewFailureFromError(400,core_sdk.ProductDomain,errors.New("No values given to modify"),true,request.GetModifyRectifier(origin))
+		log.AddNewFailureFromError(400,origin,errors.New("No values given to modify"),true,request.GetModifyRectifier(origin))
 		resp.SetLog(*log)
 		return resp
 	}
 
-	query := fmt.Sprintf("UPDATE OBJ_Products SET %s WHERE PK_OBJ = ?", strings.Join(totalUpdateStatement,","))
+	query := fmt.Sprintf("UPDATE OBJ_%s SET %s WHERE PK_OBJ = ?",request.GetObjectHandle(), strings.Join(totalUpdateStatement,","))
 	//Exec the update
 	_ , dbErr := db.Exec(query,request.GetPrimaryKey())
 
 	//if the db failed knockout
 	if dbErr != nil {
-		log.AddNewFailureFromError(500,core_sdk.ProductDomain,dbErr,true,request.GetModifyRectifier(origin))
+		log.AddNewFailureFromError(500,origin,dbErr,true,request.GetModifyRectifier(origin))
 		resp.SetLog(*log)
 		return resp
 	}
@@ -46,7 +46,7 @@ func ModifyChangeCore(request linkcore.ModifyRequest, db *sql.DB, origin string)
 		if idErr != nil {
 			//if we fail to get the ID's, we treat it as a non fatal failure since we have the full object but we must return
 			//immediately as the rest of hte function relies on those ID's
-			log.AddNewFailureFromError(500,core_sdk.ProductDomain,idErr,false,request.GetModifyRectifier(origin))
+			log.AddNewFailureFromError(500,origin,idErr,false,request.GetModifyRectifier(origin))
 			resp.SetLog(*log)
 			resp.SetObjectFromPK(db,request.GetPrimaryKey()) //note this function has the side effect of directly logging object errors
 			return resp
@@ -66,7 +66,7 @@ func ModifyChangeCore(request linkcore.ModifyRequest, db *sql.DB, origin string)
 	deltaReq, _, deltaErr := request.EnactDelta()
 
 	if deltaErr != nil {
-		log.AddNewFailureFromError(500,core_sdk.ProductDomain,deltaErr,false, request.GetModifyRectifier(origin))
+		log.AddNewFailureFromError(500,origin,deltaErr,false, request.GetModifyRectifier(origin))
 		resp.SetLog(*log)
 		resp.SetObjectFromPK(db,request.GetPrimaryKey())
 		return resp
@@ -80,7 +80,7 @@ func ModifyChangeCore(request linkcore.ModifyRequest, db *sql.DB, origin string)
 	//check if we failed to execute the delta, if we did we can bypass the full rerun by passing all the info
 	//we already know
 	if deltaErr != nil {
-		log.AddNewFailureFromError(500,core_sdk.ProductDomain,deltaErr,false, request.GetModifyRectifier(core_sdk.DeltaDomain))
+		log.AddNewFailureFromError(500,origin,deltaErr,false, request.GetModifyRectifier(core_sdk.DeltaDomain))
 	}
 
 

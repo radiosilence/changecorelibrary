@@ -20,7 +20,7 @@ func CreateChangeCore(request linkcore.CreateRequest,db *sql.DB, origin string)(
 	setErr := resp.GetObject().SetValues(request.GetValues())
 
 	if setErr != nil {
-		log.AddNewFailureFromError(500,core_sdk.ProductDomain,setErr,true,request.GetCreateRectifier(origin))
+		log.AddNewFailureFromError(500,origin,setErr,true,request.GetCreateRectifier(origin))
 		resp.SetLog(*log)
 		return resp
 	}
@@ -28,13 +28,13 @@ func CreateChangeCore(request linkcore.CreateRequest,db *sql.DB, origin string)(
 	//Create the object in the database
 	res, dbErr := request.InsertIntoDatabase(db)
 	if dbErr != nil {
-		log.AddNewFailureFromError(500,core_sdk.ProductDomain,dbErr,true,request.GetCreateRectifier(origin))
+		log.AddNewFailureFromError(500,origin,dbErr,true,request.GetCreateRectifier(origin))
 		resp.SetLog(*log)
 		return resp
 	}
 	pkID, pkErr := res.LastInsertId()
 	if pkErr != nil {
-		log.AddNewFailureFromError(500,core_sdk.ProductDomain,pkErr,true,request.GetCreateRectifier(origin))
+		log.AddNewFailureFromError(500,origin,pkErr,true,request.GetCreateRectifier(origin))
 		resp.SetLog(*log)
 		return resp
 	}
@@ -56,13 +56,13 @@ func CreateChangeCore(request linkcore.CreateRequest,db *sql.DB, origin string)(
 	tempCodes := CreateCodesFromSources(request.GetCodes().Values,stubbedSwitch,request.GetCodes().Inverted)
 	request.SetCodes(tempCodes)
 
-	//create product in our integrations
+	//create in integrations
 	dO, _, deltaErr := request.EnactDelta()
 
 
 	//check if there was an error in sending the delta request
 	if deltaErr != nil {
-		log.AddNewFailureFromError(500,core_sdk.ProductDomain,deltaErr,false,request.GetInstallRectifier(*tempTokom,origin))
+		log.AddNewFailureFromError(500,origin,deltaErr,false,request.GetInstallRectifier(*tempTokom,origin))
 		resp.SetLog(*log)
 		//the responses object values have already been set
 		return resp
@@ -82,7 +82,7 @@ func CreateChangeCore(request linkcore.CreateRequest,db *sql.DB, origin string)(
 
 	//A corr err in this case means a complete failure of correlation insertion
 	if corrErr != nil {
-		log.AddNewFailureFromError(500, core_sdk.ProductDomain,corrErr,false,request.GetLinkRectifier(*tempTokom,origin,deltaCommonReq.GetIDs()))
+		log.AddNewFailureFromError(500, origin,corrErr,false,request.GetLinkRectifier(*tempTokom,origin,deltaCommonReq.GetIDs()))
 	} else {
 		resp.GetObject().SetIDs(deltaCommonReq.GetIDs())
 	}

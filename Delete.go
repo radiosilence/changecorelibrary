@@ -21,7 +21,7 @@ func DeleteChangeCore(request linkcore.DeleteRequest, db *sql.DB, origin string)
 		if idErr != nil {
 			//we can't delete from our db if there are any correlations existing
 			//therefore if we can't get those correlations we knockout
-			log.AddNewFailureFromError(500,core_sdk.ProductDomain,idErr,true,request.GetDeleteRectifier(origin))
+			log.AddNewFailureFromError(500,origin,idErr,true,request.GetDeleteRectifier(origin))
 			resp.SetLog(*log)
 			resp.SetPayload(false)
 			return resp
@@ -39,7 +39,7 @@ func DeleteChangeCore(request linkcore.DeleteRequest, db *sql.DB, origin string)
 	deltaReq, _, deltaErr := request.EnactDelta()
 
 	if deltaErr != nil || deltaReq == nil {
-		log.AddNewFailureFromError(500,core_sdk.ProductDomain,deltaErr,true, request.GetDeleteRectifier(origin))
+		log.AddNewFailureFromError(500,origin,deltaErr,true, request.GetDeleteRectifier(origin))
 		resp.SetLog(*log)
 		resp.SetPayload(false)
 		return resp
@@ -62,22 +62,24 @@ func DeleteChangeCore(request linkcore.DeleteRequest, db *sql.DB, origin string)
 			deleteStatements = append(deleteStatements,stringVal)
 		}
 
-		corrDBQuery := fmt.Sprintf("DELETE FROM COR_Products where %s",strings.Join(deleteStatements," or "))
+		corrDBQuery := fmt.Sprintf("DELETE FROM COR_%s where %s",request.GetObjectHandle(),strings.Join(deleteStatements," or "))
 
 		_, corrErr := db.Exec(corrDBQuery)
 
 		if corrErr != nil {
-			log.AddNewFailureFromError(500,core_sdk.ProductDomain,corrErr,true, request.GetDeleteRectifier(origin))
+			log.AddNewFailureFromError(500,origin,corrErr,true, request.GetDeleteRectifier(origin))
 			resp.SetLog(*log)
 			resp.SetPayload(false)
 			return resp
 		}
 	}
 
-	_, dbErrCass := db.Exec("DELETE FROM OBJ_Products WHERE PK_OBJ = ?",strconv.FormatInt(request.GetPrimaryKey(), 10))
+	deleteStatement := fmt.Sprintf("DELETE FROM OBJ_%s WHERE PK_OBJ = ?",request.GetObjectHandle())
+
+	_, dbErrCass := db.Exec(deleteStatement,strconv.FormatInt(request.GetPrimaryKey(), 10))
 
 	if dbErrCass != nil {
-		log.AddNewFailureFromError(500,core_sdk.ProductDomain,deltaErr,false, request.GetDeleteRectifier(origin))
+		log.AddNewFailureFromError(500,origin,deltaErr,false, request.GetDeleteRectifier(origin))
 		resp.SetLog(*log)
 		resp.SetPayload(false)
 		return resp

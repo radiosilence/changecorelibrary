@@ -67,7 +67,7 @@ func HandleChangeCoreInjection(c *gin.Context, req linkcore.Request, db *sql.DB,
 	reqErr := req.Receive(c)
 
 	if reqErr != nil {
-		Catch.HandleKnockoutPunch(c,400,core_sdk.ProductDomain,reqErr)
+		Catch.HandleKnockoutPunch(c,400,origin,reqErr)
 	} else {
 		var resp Catch.IsLogged
 		if coreFunc == nil {
@@ -97,7 +97,7 @@ func StandardCoreSwitch(ogReq linkcore.Request, db *sql.DB, origin string) (Catc
 		return LinkChangeCore(v,db,origin)
 	default:
 		log := new(Catch.Log)
-		log.AddNewFailureFromError(500,core_sdk.ProductDomain,errors.New("Request Not Implemented"),true,Catch.Rectifier{}) //todo fix this pass
+		log.AddNewFailureFromError(500,origin,errors.New("Request Not Implemented"),true,Catch.Rectifier{}) //todo fix this pass
 		return log
 	}
 	//todo push the change here to switchboard
