@@ -6,9 +6,6 @@ import (
 	"bitbucket.org/tokom_/linkcore"
 	"database/sql"
 	"github.com/Afternight/Catch"
-	"errors"
-	"fmt"
-	"strings"
 )
 
 func ModifyChangeCore(request linkcore.ModifyRequest, db *sql.DB, origin string) (linkcore.ModifyResponse){
@@ -21,21 +18,11 @@ func ModifyChangeCore(request linkcore.ModifyRequest, db *sql.DB, origin string)
 	response := request.ConstructNewResponseObject()
 	resp := response.(linkcore.ModifyResponse)
 
-	totalUpdateStatement := request.GetStatementArray()
+	updateDbErr := request.UpdateObject(db) //actually updates the database (and any sub tables of the object)
 
-	if len(totalUpdateStatement) == 0 {
-		log.AddNewFailureFromError(400,origin,errors.New("No values given to modify"),true,request.GetModifyRectifier(origin))
-		resp.SetLog(*log)
-		return resp
-	}
-
-	query := fmt.Sprintf("UPDATE OBJ_%s SET %s WHERE PK_OBJ = ?",request.GetObjectHandle(), strings.Join(totalUpdateStatement,","))
-	//Exec the update
-	_ , dbErr := db.Exec(query,request.GetPrimaryKey())
-
-	//if the db failed knockout
-	if dbErr != nil {
-		log.AddNewFailureFromError(500,origin,dbErr,true,request.GetModifyRectifier(origin))
+	//if the update failed knockout
+	if updateDbErr != nil {
+		log.AddNewFailureFromError(500,origin,updateDbErr,true,request.GetModifyRectifier(origin))
 		resp.SetLog(*log)
 		return resp
 	}
