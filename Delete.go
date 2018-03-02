@@ -74,11 +74,9 @@ func DeleteChangeCore(request linkcore.DeleteRequest, db *sql.DB, origin string)
 		}
 	}
 
-	deleteStatement := fmt.Sprintf("DELETE FROM OBJ_%s WHERE PK_OBJ = ?",request.GetObjectHandle())
+	deleteErr := request.DeleteObject()
 
-	_, dbErrCass := db.Exec(deleteStatement,strconv.FormatInt(request.GetPrimaryKey(), 10))
-
-	if dbErrCass != nil {
+	if deleteErr != nil {
 		log.AddNewFailureFromError(500,origin,deltaErr,false, request.GetDeleteRectifier(origin))
 		resp.SetLog(*log)
 		resp.SetPayload(false)
