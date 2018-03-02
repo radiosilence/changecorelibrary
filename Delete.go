@@ -74,7 +74,7 @@ func DeleteChangeCore(request linkcore.DeleteRequest, db *sql.DB, origin string)
 		}
 	}
 
-	deleteErr := request.DeleteObject()
+	deleteErr := request.DeleteObject(db)
 
 	if deleteErr != nil {
 		log.AddNewFailureFromError(500,origin,deltaErr,false, request.GetDeleteRectifier(origin))
