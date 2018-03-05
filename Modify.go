@@ -6,6 +6,7 @@ import (
 	"bitbucket.org/tokom_/linkcore"
 	"database/sql"
 	"github.com/Afternight/Catch"
+	"fmt"
 )
 
 func ModifyChangeCore(request linkcore.ModifyRequest, db *sql.DB, origin string) (linkcore.ModifyResponse){
@@ -19,6 +20,7 @@ func ModifyChangeCore(request linkcore.ModifyRequest, db *sql.DB, origin string)
 	resp := response.(linkcore.ModifyResponse)
 
 	updateDbErr := request.UpdateObject(db) //actually updates the database (and any sub tables of the object)
+	fmt.Println(updateDbErr)
 
 	//if the update failed knockout
 	if updateDbErr != nil {
