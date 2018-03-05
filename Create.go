@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"github.com/Afternight/Catch"
 	"bitbucket.org/tokom_/core_sdk"
+	"fmt"
 )
 
 func CreateChangeCore(request linkcore.CreateRequest,db *sql.DB, origin string)(linkcore.CreateResponse){
@@ -18,6 +19,10 @@ func CreateChangeCore(request linkcore.CreateRequest,db *sql.DB, origin string)(
 
 	//set fluids
 	setErr := resp.GetObject().SetValues(request.GetValues())
+	fmt.Println("Response now has")
+	fmt.Println(resp)
+	fmt.Println("Request has")
+	fmt.Println(request.GetValues())
 
 	if setErr != nil {
 		log.AddNewFailureFromError(500,origin,setErr,true,request.GetCreateRectifier(origin))
