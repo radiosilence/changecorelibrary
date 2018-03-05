@@ -96,6 +96,7 @@ func StandardCoreSwitch(ogReq linkcore.Request, db *sql.DB, origin string) (Catc
 	case linkcore.LinkRequest:
 		return LinkChangeCore(v,db,origin)
 	default:
+		fmt.Println("fucked")
 		log := new(Catch.Log)
 		log.AddNewFailureFromError(500,origin,errors.New("Request Not Implemented"),true,Catch.Rectifier{}) //todo fix this pass
 		return log
