@@ -43,16 +43,18 @@ func GetProperties (db *sql.DB, objPk int64, propertyName string, propertyHandle
 
 func CreateProperties(db *sql.DB, objPk int64, fks []linkcore.FK, propertyName string) error {
 	for _,val := range fks {
-		insertErr := CreateProperty(db,objPk,val,propertyName)
-		if insertErr != nil {
-			return insertErr
+		if val.GetKey() > 0 {
+			insertErr := CreateProperty(db,objPk,val,propertyName)
+			if insertErr != nil {
+				return insertErr
+			}
 		}
 	}
 	return nil
 }
 
 func CreateProperty(db *sql.DB, objPk int64, fk linkcore.FK, propertyName string) error {
-	queryString := fmt.Sprintf("INSERT INTO PROP_%S (FK_PROP, FK_OBJ) VALUES (?,?)",propertyName)
+	queryString := fmt.Sprintf("INSERT INTO PROP_%s (FK_PROP, FK_OBJ) VALUES (?,?)",propertyName)
 	_, dbErr := db.Exec(queryString,fk.GetKey(),objPk)
 	return dbErr
 }
